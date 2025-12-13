@@ -1809,6 +1809,24 @@ Pense à la déplacer dans le dossier :
         if (!j.ok) throw new Error(j.error || "Erreur API (GET)");
         return j.state || null;
     }
+async function apiSetState(state, isPing = false) {
+  const r = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      action: "set",
+      token: editToken,
+      state: state,
+      ping: !!isPing
+    })
+  });
+
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "Erreur API (POST)");
+  return j;
+}
 
     async function apiSetState(state, isPing=false) {
         const token = getEditorToken();
@@ -1919,4 +1937,5 @@ Pense à la déplacer dans le dossier :
 </script>
 </body>
 </html>
+
 
