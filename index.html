@@ -1360,582 +1360,238 @@
     </div>
 </footer>
 
-<script>
+/* ==============================
+   MODE PARTAGÉ (Apps Script)
+   - Lecture pour tous
+   - Édition protégée (mot de passe)
+   ============================== */
 
-    /* =========================
-       MODE PARTAGÉ (Google Sheets + Apps Script)
-       - Lecture pour tous
-       - Édition réservée (mot de passe)
-       ========================= */
+// 1) URL de ton Apps Script (Web app)
+const API_URL = "https://script.google.com/a/macros/egd.mg/s/AKfycbzP1wWe7oPpVjlRpQ6SAVb2FUUO-eP0aZt8PGKjwifHjCSbtFzLsU23Fm_QnjDk14v2MA/exec";
 
-    // 1) Colle ici l’URL de TON Apps Script (Web app)
-    const API_URL = "https://script.google.com/a/macros/egd.mg/s/AKfycbzP1wWe7oPpVjlRpQ6SAVb2FUUO-eP0aZt8PGKjwifHjCSbtFzLsU23Fm_QnjDk14v2MA/exec";
+// 2) Mot de passe d'édition (doit être identique à EDIT_TOKEN côté Apps Script)
+const EDIT_TOKEN = "LFT2025";
 
-    // 2) Mot de passe d’édition (tu le définis aussi côté Apps Script)
-    //    => ici on le stocke en session (sessionStorage) après saisie
-    const EDIT_SESSION_KEY = "lft_editor_token";
+// ---- Etat UI
+const ui = {
+  isEditor: false,
+  lastHash: null,
+  saveTimer: null
+};
 
-    // Constantes de base (inchangées)
-    const DOSSIER_PROJETS = "Projet LFT 2025-2026";
-    const FICHE_PROJET_MODELE = "https://docs.google.com/document/d/1a8Evjzr_magbpTciki4jUDmfW2vaps5Q/copy";
-    const TUTO_FICHE_URL = "https://docs.google.com/document/d/1BUJrKIsRKqykSBhYusvjEYfEA5UyXgfc/edit?usp=drive_link&ouid=103402101997126526626&rtpof=true&sd=true";
+// ---- Utils
+function stableHash(obj) {
+  const s = JSON.stringify(obj);
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return String(h);
+}
 
-    // Correspondance "intitulé projet AEFE" -> URL info (inchangé)
-    const INFO_PROJET_DEFAULTS = {
-        "semaine des lycées français du monde": "https://www.education.gouv.fr/semaine-des-lycees-francais-du-monde-",
-        "l’intelligence artificielle – projet annuel et transversal": "https://www.ac-paris.fr/l-intelligence-artificielle-dans-l-education-130992",
-        "l'intelligence artificielle – projet annuel et transversal": "https://www.ac-paris.fr/l-intelligence-artificielle-dans-l-education-130992",
-        "club éloquence – concours aeh": "https://aefe.gouv.fr/fr/reseau-scolaire-mondial/des-projets-et-dispositifs-en-partage/dossier-ambassadeurs-ambassadrices-en-herbe",
-        "club eloquence – concours aeh": "https://aefe.gouv.fr/fr/reseau-scolaire-mondial/des-projets-et-dispositifs-en-partage/dossier-ambassadeurs-ambassadrices-en-herbe",
-        "mai des langues": "https://www.egd.mg/le-mai-des-langues-2025/",
-        "échange adn – aefe": "https://www.egd.mg/adn-aefe/",
-        "echange adn – aefe": "https://www.egd.mg/adn-aefe/",
-        "les olympiades de la chimie": "https://www.olympiades-chimie.fr/"
-    };
+function $(sel, root = document) { return root.querySelector(sel); }
+function $all(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
-    let moisCourant = null;
-    const donneesMois = {};
+// ---- API (Apps Script)
+async function apiGetState() {
+  const r = await fetch(API_URL, { cache: "no-store" });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || "API GET error");
+  return j.state || null;
+}
 
-    /* ---------- UI : bandeau "Lecture / Édition" ---------- */
-    const ui = {
-        isEditor: false,
-        saving: false,
-        saveTimer: null,
-        lastLoadedHash: null
-    };
-
-    function getEditorToken() {
-        return sessionStorage.getItem(EDIT_SESSION_KEY) || "";
-    }
-
-    function setEditorToken(token) {
-        if (token) sessionStorage.setItem(EDIT_SESSION_KEY, token);
-        else sessionStorage.removeItem(EDIT_SESSION_KEY);
-    }
-
-    function ensureModeBar() {
-        if (document.getElementById("modeBar")) return;
-
-        const bar = document.createElement("div");
-        bar.id = "modeBar";
-        bar.style.cssText = `
-          position: sticky; top: 0; z-index: 9999;
-          background: rgba(15,23,42,0.92);
-          color: #e5e7eb;
-          padding: 0.55rem 0.9rem;
-          font-size: 0.85rem;
-          display: flex; gap: 0.6rem; align-items: center; justify-content: space-between;
-          backdrop-filter: blur(8px);
-        `;
-
-        bar.innerHTML = `
-          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
-            <strong>Suivi partagé</strong>
-            <span id="modeBadge" style="padding:.15rem .55rem;border-radius:999px;background:#334155;">Lecture</span>
-            <span id="saveBadge" style="opacity:.85;"></span>
-          </div>
-          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-            <button id="btnEditMode" style="border:none;border-radius:999px;padding:.35rem .75rem;cursor:pointer;">Passer en édition</button>
-            <button id="btnRefresh" style="border:none;border-radius:999px;padding:.35rem .75rem;cursor:pointer;">Actualiser</button>
-            <button id="btnLogout" style="border:none;border-radius:999px;padding:.35rem .75rem;cursor:pointer;display:none;">Quitter édition</button>
-          </div>
-        `;
-
-        document.body.insertBefore(bar, document.body.firstChild);
-
-        document.getElementById("btnEditMode").addEventListener("click", async () => {
-            const token = prompt("Mot de passe d’édition (réservé) :");
-            if (!token) return;
-            setEditorToken(token);
-            // on teste une écriture à blanc (ping)
-            try {
-                await apiSetState(collectState(), true);
-                ui.isEditor = true;
-                applyReadOnly(false);
-                updateModeBar();
-                alert("✅ Mode édition activé.");
-            } catch (e) {
-                setEditorToken("");
-                ui.isEditor = false;
-                applyReadOnly(true);
-                updateModeBar();
-                alert("❌ Mot de passe incorrect ou API non configurée.
-
-Détail: " + e.message);
-            }
-        });
-
-        document.getElementById("btnLogout").addEventListener("click", () => {
-            setEditorToken("");
-            ui.isEditor = false;
-            applyReadOnly(true);
-            updateModeBar();
-        });
-
-        document.getElementById("btnRefresh").addEventListener("click", async () => {
-            await loadSharedState(true);
-        });
-
-        updateModeBar();
-    }
-
-    function updateModeBar() {
-        const badge = document.getElementById("modeBadge");
-        const saveBadge = document.getElementById("saveBadge");
-        const btnEdit = document.getElementById("btnEditMode");
-        const btnLogout = document.getElementById("btnLogout");
-
-        if (!badge) return;
-        if (ui.isEditor) {
-            badge.textContent = "Édition";
-            badge.style.background = "#16a34a";
-            btnEdit.style.display = "none";
-            btnLogout.style.display = "inline-block";
-        } else {
-            badge.textContent = "Lecture";
-            badge.style.background = "#334155";
-            btnEdit.style.display = "inline-block";
-            btnLogout.style.display = "none";
-        }
-
-        if (ui.saving) saveBadge.textContent = "⏳ Sauvegarde…";
-        else saveBadge.textContent = "";
-    }
-
-    function applyReadOnly(readOnly) {
-        // contenteditable
-        document.querySelectorAll('[contenteditable="true"]').forEach(el => {
-            el.setAttribute("contenteditable", readOnly ? "false" : "true");
-            if (readOnly) el.style.outline = "none";
-        });
-
-        // Boutons d’ajout de lignes
-        document.querySelectorAll('button').forEach(btn => {
-            const txt = (btn.textContent || "").trim();
-            if (txt.includes("Ajouter une ligne") || txt.startsWith("➕")) {
-                btn.style.display = readOnly ? "none" : "";
-            }
-        });
-
-        // Petits boutons ✕ (suppression liens)
-        document.querySelectorAll('.btn-danger').forEach(btn => {
-            btn.style.display = readOnly ? "none" : "";
-        });
-    }
-
-    /* ---------- Navigation entre sections (inchangée, mais on planifie la sauvegarde) ---------- */
-    function afficherSection(id) {
-        const sections = document.querySelectorAll('.page-section');
-        const moisDetail = document.getElementById('mois-detail');
-        if (moisDetail && moisDetail.classList.contains('active')) {
-            sauvegarderMoisCourant();
-        }
-        sections.forEach(sec => sec.classList.remove('active'));
-        const cible = document.getElementById(id);
-        if (cible) {
-            cible.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }
-
-    // Sauvegarde du mois courant (table "projets du mois")
-    function sauvegarderMoisCourant() {
-        if (!moisCourant) return;
-        const tbody = document.querySelector('#table-mois-detail tbody');
-        if (!tbody) return;
-        donneesMois[moisCourant] = tbody.innerHTML;
-    }
-
-    // Ouvrir un mois donné
-    function ouvrirMois(mois) {
-        sauvegarderMoisCourant();
-        moisCourant = mois;
-        document.getElementById('moisTitre').textContent = mois;
-        const table = document.getElementById('table-mois-detail');
-        const tbody = table.querySelector('tbody');
-        if (donneesMois[mois]) {
-            tbody.innerHTML = donneesMois[mois];
-        } else {
-            tbody.innerHTML = '';
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.setAttribute('contenteditable', ui.isEditor ? 'true' : 'false');
-            row.appendChild(cell);
-            tbody.appendChild(row);
-        }
-        afficherSection('mois-detail');
-    }
-
-    // Ajouter une ligne dans le tableau "projets du mois"
-    function ajouterLigneMoisDetail() {
-        if (!ui.isEditor) return alert("Lecture seule : passe en mode édition pour modifier.");
-        const table = document.getElementById('table-mois-detail');
-        const tbody = table.querySelector('tbody');
-        const templateRow = tbody.rows[0];
-        const newRow = templateRow.cloneNode(true);
-        newRow.cells[0].textContent = '';
-        newRow.cells[0].setAttribute('contenteditable','true');
-        tbody.appendChild(newRow);
-        scheduleSave();
-    }
-
-    // Ajouter une ligne générique
-    function ajouterLigneGenerique(tableId) {
-        if (!ui.isEditor) return alert("Lecture seule : passe en mode édition pour modifier.");
-        const table = document.getElementById(tableId);
-        if (!table) return;
-        const tbody = table.querySelector('tbody');
-        const templateRow = tbody.rows[0];
-        const newRow = templateRow.cloneNode(true);
-        Array.from(newRow.cells).forEach(cell => {
-            const buttons = cell.querySelectorAll('button');
-            if (buttons.length) {
-                buttons.forEach(btn => btn.removeAttribute('data-url'));
-            } else if (cell.hasAttribute('contenteditable')) {
-                cell.textContent = '';
-                cell.setAttribute('contenteditable','true');
-            }
-        });
-        tbody.appendChild(newRow);
-        scheduleSave();
-    }
-
-    // Transforme un lien Google Docs en /copy si besoin
-    function transformerLienTemplate(url) {
-        try {
-            const u = new URL(url);
-            if (u.hostname.includes("docs.google.com")) {
-                if (u.pathname.endsWith("/copy") || u.pathname.includes("/template")) return u.toString();
-                if (u.pathname.includes("/edit")) {
-                    const base = u.origin + u.pathname.split("/edit")[0];
-                    return base + "/copy";
-                }
-                return u.origin + u.pathname.replace(/\/$/, "") + "/copy";
-            }
-        } catch (e) {}
-        return url;
-    }
-
-    // Boutons de liens : en lecture seule, on ouvre uniquement si data-url existe
-    function ouvrirFicheProjet(btn) {
-        let url = btn.getAttribute('data-url');
-        if (!url) url = FICHE_PROJET_MODELE;
-
-        if (!ui.isEditor && !btn.getAttribute('data-url')) {
-            // lecture seule : on ouvre le modèle sans enregistrer de lien perso
-            window.open(transformerLienTemplate(url), '_blank');
-            return;
-        }
-
-        if (!ui.isEditor) return alert("Lecture seule : passe en mode édition pour modifier les liens.");
-
-        if (!url) {
-            url = prompt("Saisir ou coller le lien de la fiche projet vierge (Google Docs, Drive, etc.) :");
-            if (!url) return;
-        }
-        const finalUrl = transformerLienTemplate(url);
-        btn.setAttribute('data-url', finalUrl);
-        scheduleSave();
-        window.open(finalUrl, '_blank');
-        setTimeout(() => {
-            alert("La copie de la fiche projet vient d’être créée dans ton Drive.
-
-Pense à la déplacer dans le dossier :
-
-« " + DOSSIER_PROJETS + " ».");
-        }, 800);
-    }
-
-    function ouvrirInfoProjet(btn) {
-        let url = btn.getAttribute('data-url');
-
-        if (!url) {
-            const row = btn.closest('tr');
-            if (row && row.cells.length > 0) {
-                const titre = row.cells[0].textContent.trim().toLowerCase();
-                if (INFO_PROJET_DEFAULTS[titre]) {
-                    url = INFO_PROJET_DEFAULTS[titre];
-                    if (ui.isEditor) btn.setAttribute('data-url', url);
-                }
-            }
-        }
-
-        if (!url) {
-            if (!ui.isEditor) return alert("Aucun lien défini (lecture seule).");
-            url = prompt("Saisir ou coller le lien d’information sur ce projet (page web explicative) :");
-            if (!url) return;
-            btn.setAttribute('data-url', url);
-        }
-
-        if (ui.isEditor) scheduleSave();
-        window.open(url, '_blank');
-    }
-
-    function ouvrirHistoriqueProjet(btn) {
-        let url = btn.getAttribute('data-url');
-        if (!url) {
-            if (!ui.isEditor) return alert("Aucun lien défini (lecture seule).");
-            url = prompt("Saisir ou coller le lien vers l’historique de ce projet (dossier Drive, pad, document, etc.) :");
-            if (!url) return;
-            btn.setAttribute('data-url', url);
-            scheduleSave();
-        }
-        window.open(url, '_blank');
-    }
-
-    function ouvrirProjetEtab(btn) {
-        let url = btn.getAttribute('data-url');
-        if (!url) {
-            if (!ui.isEditor) return alert("Aucun lien défini (lecture seule).");
-            url = prompt("Saisir ou coller le lien vers le projet d'établissement (Genially, document, etc.) :");
-            if (!url) return;
-            btn.setAttribute('data-url', url);
-            scheduleSave();
-        }
-        window.open(url, '_blank');
-    }
-
-    function ouvrirTutoFiche(btn) {
-        let url = btn.getAttribute('data-url');
-        if (!url) url = TUTO_FICHE_URL;
-
-        if (!url) {
-            if (!ui.isEditor) return alert("Aucun lien défini (lecture seule).");
-            url = prompt("Saisir ou coller le lien vers le tutoriel (vidéo, Genially, document, etc.) :");
-            if (!url) return;
-        }
-
-        if (ui.isEditor) {
-            btn.setAttribute('data-url', url);
-            scheduleSave();
-        }
-        window.open(url, '_blank');
-    }
-
-    function supprimerLien(xButton) {
-        if (!ui.isEditor) return alert("Lecture seule : passe en mode édition pour modifier.");
-        const confirmation = confirm("Voulez-vous supprimer le lien ?");
-        if (!confirmation) return;
-        const cell = xButton.parentElement;
-        if (!cell) return;
-        const buttons = cell.querySelectorAll('button');
-        buttons.forEach(btn => { if (btn !== xButton) btn.removeAttribute('data-url'); });
-        scheduleSave();
-        alert("Le lien a été supprimé pour ce bouton.");
-    }
-
-    /* =========================
-       SAUVEGARDE PARTAGÉE (API)
-       ========================= */
-
-    function collectState() {
-        // Sauvegarder le mois courant
-        sauvegarderMoisCourant();
-
-        const tableIds = ['table-aefe', 'table-zoi', 'table-lft', 'table-inst'];
-        const tableData = {};
-        tableIds.forEach(id => {
-            const table = document.getElementById(id);
-            if (table) {
-                const tbody = table.querySelector('tbody');
-                if (tbody) tableData[id] = tbody.innerHTML;
-            }
-        });
-
-        const linksData = {};
-        const btnProjet = document.querySelector('#projet-etab .btn-primary');
-        if (btnProjet) {
-            const u = btnProjet.getAttribute('data-url');
-            if (u) linksData.projetEtab = u;
-        }
-        const btnTuto = document.querySelector('#tuto-fiche .btn-primary');
-        if (btnTuto) {
-            const u2 = btnTuto.getAttribute('data-url');
-            if (u2) linksData.tutoFiche = u2;
-        }
-
-        return {
-            version: 1,
-            mois: donneesMois,
-            tables: tableData,
-            links: linksData,
-            updatedAt: new Date().toISOString()
-        };
-    }
-
-    function applyState(state) {
-        if (!state || typeof state !== "object") return;
-
-        // mois
-        if (state.mois && typeof state.mois === "object") {
-            Object.keys(donneesMois).forEach(k => delete donneesMois[k]);
-            Object.assign(donneesMois, state.mois);
-        }
-
-        // tables
-        if (state.tables && typeof state.tables === "object") {
-            Object.keys(state.tables).forEach(id => {
-                const table = document.getElementById(id);
-                if (table) {
-                    const tbody = table.querySelector('tbody');
-                    if (tbody) tbody.innerHTML = state.tables[id];
-                }
-            });
-        }
-
-        // links
-        if (state.links && typeof state.links === "object") {
-            const btnProjet = document.querySelector('#projet-etab .btn-primary');
-            if (btnProjet && state.links.projetEtab) btnProjet.setAttribute('data-url', state.links.projetEtab);
-            const btnTuto = document.querySelector('#tuto-fiche .btn-primary');
-            if (btnTuto && state.links.tutoFiche) btnTuto.setAttribute('data-url', state.links.tutoFiche);
-        }
-
-        // appliquer le mode readonly/edition sur le DOM courant
-        applyReadOnly(!ui.isEditor);
-    }
-
-    function stableHash(obj) {
-        // hash simple pour éviter d’écraser un état identique
-        const s = JSON.stringify(obj);
-        let h = 0;
-        for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-        return String(h);
-    }
-
-    async function apiGetState() {
-        const r = await fetch(API_URL, { cache: "no-store" });
-        const j = await r.json();
-        if (!j.ok) throw new Error(j.error || "Erreur API (GET)");
-        return j.state || null;
-    }
 async function apiSetState(state, isPing = false) {
   const r = await fetch(API_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify({
       action: "set",
-      token: editToken,
-      state: state,
+      token: EDIT_TOKEN,
+      state,
       ping: !!isPing
     })
   });
-
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error || "Erreur API (POST)");
+  if (!j.ok) throw new Error(j.error || "API POST error");
   return j;
 }
 
-    async function apiSetState(state, isPing=false) {
-        const token = getEditorToken();
-        const r = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "set", token, state, ping: !!isPing })
-        });
-        const j = await r.json();
-        if (!j.ok) throw new Error(j.error || "Erreur API (POST)");
-        return j;
-    }
+// ---- Sauvegarde / chargement (générique)
+function collectState() {
+  // ⚠️ Ici on récupère un état "simple" basé sur tes cellules éditables
+  // Si ton HTML utilise des champs contenteditable dans des <td>, c'est parfait.
+  const data = {};
+  $all("[data-field]").forEach(el => {
+    const key = el.getAttribute("data-field");
+    data[key] = (el.textContent || "").trim();
+  });
 
-    function scheduleSave() {
-        if (!ui.isEditor) return;
-        if (ui.saveTimer) clearTimeout(ui.saveTimer);
-        ui.saveTimer = setTimeout(async () => {
-            try {
-                ui.saving = true; updateModeBar();
-                const state = collectState();
-                const h = stableHash(state);
-                if (h === ui.lastLoadedHash) { ui.saving = false; updateModeBar(); return; }
-                await apiSetState(state);
-                ui.lastLoadedHash = h;
-            } catch (e) {
-                console.error(e);
-                alert("Erreur de sauvegarde partagée : " + e.message);
-            } finally {
-                ui.saving = false; updateModeBar();
-            }
-        }, 600);
-    }
+  // Si tu as des tableaux contenteditable sans data-field,
+  // on capture aussi le contenu brut des cellules.
+  const tables = $all("table");
+  const tableDump = tables.map(t => {
+    return $all("tr", t).map(tr => $all("th,td", tr).map(td => (td.textContent || "").trim()));
+  });
 
-    async function loadSharedState(force=false) {
-        try {
-            const state = await apiGetState();
-            if (!state) return;
-            const h = stableHash(state);
-            if (!force && ui.lastLoadedHash === h) return;
+  return { data, tableDump, ts: Date.now() };
+}
 
-            ui.lastLoadedHash = h;
-            applyState(state);
-        } catch (e) {
-            console.warn("Impossible de charger l’état partagé :", e);
-        }
-    }
-
-    function attachAutoSaveListeners() {
-        // En édition : sauvegarder quand l’utilisateur modifie du contenu
-        document.addEventListener("input", (e) => {
-            if (!ui.isEditor) return;
-            const t = e.target;
-            if (t && t.closest && t.closest("td") && t.closest("td").getAttribute("contenteditable") === "true") {
-                scheduleSave();
-            }
-        }, true);
-
-        // Sauvegarde lors de sortie de cellule (blur)
-        document.addEventListener("blur", (e) => {
-            if (!ui.isEditor) return;
-            const t = e.target;
-            if (t && t.getAttribute && t.getAttribute("contenteditable") === "true") scheduleSave();
-        }, true);
-    }
-
-    /* ---------- Démarrage ---------- */
-    document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    ensureModeBar();
-
-    // Mode par défaut : lecture
-    ui.isEditor = false;
-    applyReadOnly(true);
-
-    attachAutoSaveListeners();
-
-    // Charger l’état partagé au démarrage
-    await loadSharedState(true);
-
-    // Rafraîchissement auto toutes les 30s en lecture
-    setInterval(() => {
-      if (!ui.isEditor) loadSharedState(false);
-    }, 30000);
-
-  } catch (e) {
-    console.error("Erreur initShared :", e);
-    alert("Erreur de chargement du suivi partagé.\nOuvre la console (F12) pour détails.");
+function applyState(state) {
+  if (!state) return;
+  if (state.data) {
+    Object.entries(state.data).forEach(([k, v]) => {
+      const el = document.querySelector(`[data-field="${k}"]`);
+      if (el) el.textContent = v ?? "";
+    });
   }
+  // Optionnel : réinjecter tableDump si tu veux (on évite d’écraser si structure change)
+}
+
+// ---- Mode lecture/édition
+function applyReadOnly(readOnly) {
+  // bloque le contenu éditable
+  $all("[contenteditable]").forEach(el => {
+    el.setAttribute("contenteditable", readOnly ? "false" : "true");
+  });
+  // désactive inputs si tu en as
+  $all("input, textarea, select").forEach(el => {
+    el.disabled = readOnly;
+  });
+}
+
+function ensureModeBar() {
+  if ($("#modeBar")) return;
+  const bar = document.createElement("div");
+  bar.id = "modeBar";
+  bar.style.position = "sticky";
+  bar.style.top = "0";
+  bar.style.zIndex = "9999";
+  bar.style.background = "rgba(255,255,255,0.9)";
+  bar.style.backdropFilter = "blur(6px)";
+  bar.style.borderBottom = "1px solid #e5e7eb";
+  bar.style.padding = "10px 12px";
+  bar.style.display = "flex";
+  bar.style.gap = "10px";
+  bar.style.alignItems = "center";
+  bar.style.justifyContent = "space-between";
+  bar.innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;">
+      <strong>Suivi partagé</strong>
+      <span id="modeLabel" style="padding:2px 8px;border-radius:999px;background:#f3f4f6;font-size:12px;">Lecture</span>
+      <span id="saveLabel" style="font-size:12px;color:#6b7280;"></span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="btnEdit" type="button">Passer en édition</button>
+      <button id="btnRead" type="button" style="display:none;">Revenir en lecture</button>
+    </div>
+  `;
+  document.body.prepend(bar);
+
+  $("#btnEdit").addEventListener("click", async () => {
+    const pass = prompt("Mot de passe pour éditer :");
+    if (pass == null) return;
+    if (pass !== EDIT_TOKEN) {
+      alert("Mot de passe incorrect.");
+      return;
+    }
+    // ping pour vérifier que POST est autorisé
+    try {
+      await apiSetState(collectState(), true);
+    } catch (e) {
+      console.error(e);
+      alert("Édition refusée côté API : " + (e.message || e));
+      return;
+    }
+
+    ui.isEditor = true;
+    $("#modeLabel").textContent = "Édition";
+    $("#btnEdit").style.display = "none";
+    $("#btnRead").style.display = "";
+    applyReadOnly(false);
+  });
+
+  $("#btnRead").addEventListener("click", () => {
+    ui.isEditor = false;
+    $("#modeLabel").textContent = "Lecture";
+    $("#btnEdit").style.display = "";
+    $("#btnRead").style.display = "none";
+    applyReadOnly(true);
+  });
+}
+
+// ---- Autosave
+function scheduleSave() {
+  if (!ui.isEditor) return;
+  if (ui.saveTimer) clearTimeout(ui.saveTimer);
+  ui.saveTimer = setTimeout(async () => {
+    try {
+      $("#saveLabel").textContent = "Sauvegarde…";
+      const state = collectState();
+      const h = stableHash(state);
+      if (h === ui.lastHash) {
+        $("#saveLabel").textContent = "";
+        return;
+      }
+      await apiSetState(state, false);
+      ui.lastHash = h;
+      $("#saveLabel").textContent = "✓ Sauvegardé";
+      setTimeout(() => { if ($("#saveLabel")) $("#saveLabel").textContent = ""; }, 1200);
+    } catch (e) {
+      console.error(e);
+      alert("Erreur de sauvegarde partagée : " + (e.message || e));
+      $("#saveLabel").textContent = "";
+    }
+  }, 600);
+}
+
+function attachAutoSaveListeners() {
+  document.addEventListener("input", () => scheduleSave(), true);
+  document.addEventListener("blur", () => scheduleSave(), true);
+}
+
+// ---- Navigation boutons/sections (si ton HTML suit le principe .page-section)
+function wireNavigation() {
+  const sections = $all(".page-section");
+  if (!sections.length) return;
+
+  function showSection(id) {
+    sections.forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
+  }
+
+  // boutons avec data-target="idSection"
+  $all("[data-target]").forEach(btn => {
+    btn.addEventListener("click", () => showSection(btn.getAttribute("data-target")));
+  });
+}
+
+// ---- Chargement initial
+async function loadSharedState(force = false) {
+  try {
+    const state = await apiGetState();
+    if (!state) return;
+    const h = stableHash(state);
+    if (!force && ui.lastHash && h === ui.lastHash) return;
+    ui.lastHash = h;
+    applyState(state);
+  } catch (e) {
+    console.warn("Impossible de charger l’état partagé :", e);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  ensureModeBar();
+  ui.isEditor = false;
+  applyReadOnly(true);
+  wireNavigation();
+  attachAutoSaveListeners();
+  await loadSharedState(true);
+  setInterval(() => {
+    if (!ui.isEditor) loadSharedState(false);
+  }, 30000);
 });
 
-        ensureModeBar();
-
-        // Mode par défaut : lecture
-        ui.isEditor = false;
-        applyReadOnly(true);
-
-        attachAutoSaveListeners();
-
-        // Charger l’état partagé au démarrage
-        await loadSharedState(true);
-
-        // Rafraîchir automatiquement toutes les 30 secondes en lecture
-        setInterval(() => {
-            if (!ui.isEditor) loadSharedState(false);
-        }, 30000);
-    })();
-
-</script>
 </body>
 </html>
+
 
 
