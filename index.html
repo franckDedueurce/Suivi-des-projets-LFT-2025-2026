@@ -2,14 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>LFT – Suivi des projets</title>
+<title>Suivi des projets – LFT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body{
+  font-family: system-ui, Arial, sans-serif;
   margin:0;
-  font-family:system-ui,Segoe UI,Arial;
-  background:#f3f4f6;
+  background:#f4f6f9;
   color:#1f2937;
 }
 header{
@@ -19,44 +19,46 @@ header{
   text-align:center;
 }
 main{
-  padding:20px;
   max-width:1000px;
   margin:auto;
+  padding:20px;
 }
-button{
-  cursor:pointer;
+.page{
+  display:none;
+}
+.page.active{
+  display:block;
 }
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:20px;
 }
-.card{
-  background:white;
-  border-radius:12px;
-  padding:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-.big-btn{
-  width:100%;
-  padding:20px;
+button{
+  cursor:pointer;
   border:none;
   border-radius:12px;
-  background:#2563eb;
-  color:white;
-  font-size:18px;
+  padding:20px;
+  font-size:16px;
+  background:white;
+  box-shadow:0 6px 18px rgba(0,0,0,.1);
+  transition:.2s;
 }
-.big-btn:hover{
-  background:#1d4ed8;
+button:hover{
+  transform:translateY(-4px);
 }
-.section{
-  display:none;
-}
-.section.active{
-  display:block;
+h2{
+  margin-top:0;
 }
 .back{
   margin-top:20px;
+  background:#e5e7eb;
+}
+footer{
+  text-align:center;
+  font-size:14px;
+  color:#6b7280;
+  padding:20px;
 }
 </style>
 </head>
@@ -64,87 +66,69 @@ button{
 <body>
 
 <header>
-  <h1>Suivi des projets – Lycée Français de Tananarive</h1>
-  <p>Année scolaire 2025–2026</p>
+  <h1>Suivi des projets</h1>
+  <p>Lycée Français de Tananarive</p>
 </header>
 
 <main>
 
 <!-- ACCUEIL -->
-<section id="accueil" class="section active">
-  <div class="card">
-    <h2>Tableau de bord</h2>
-    <p>Clique sur un bouton pour accéder aux différentes vues.</p>
-
-    <div class="grid">
-      <button class="big-btn" onclick="showSection('projets')">
-        📊 Projets par mois
-      </button>
-
-      <button class="big-btn" onclick="showSection('tuto')">
-        📘 Tuto fiche projet
-      </button>
-
-      <button class="big-btn" onclick="showSection('apropos')">
-        ℹ️ À propos
-      </button>
-    </div>
+<section id="accueil" class="page active">
+  <h2>Tableau de bord</h2>
+  <div class="grid">
+    <button onclick="showPage('mois')">
+      📅<br><strong>Projets par mois</strong><br>
+      Vue chronologique
+    </button>
+    <button onclick="showPage('liste')">
+      📋<br><strong>Liste des projets</strong><br>
+      Vue globale
+    </button>
+    <button onclick="showPage('aide')">
+      ❓<br><strong>Aide / Tutoriel</strong><br>
+      Comment utiliser l’outil
+    </button>
   </div>
 </section>
 
-<!-- PROJETS -->
-<section id="projets" class="section">
-  <div class="card">
-    <h2>📊 Projets par mois</h2>
-    <p>Ici tu mettras plus tard le tableau de suivi.</p>
-
-    <ul>
-      <li>Septembre : Semaine des lycées français du monde</li>
-      <li>Octobre : IA & pédagogie</li>
-      <li>Novembre : Web radio</li>
-    </ul>
-
-    <button class="back" onclick="showSection('accueil')">⬅ Retour accueil</button>
-  </div>
+<!-- PROJETS PAR MOIS -->
+<section id="mois" class="page">
+  <h2>Projets par mois</h2>
+  <p>Contenu à compléter (ex : Septembre → Juin).</p>
+  <button class="back" onclick="showPage('accueil')">⬅ Retour</button>
 </section>
 
-<!-- TUTO -->
-<section id="tuto" class="section">
-  <div class="card">
-    <h2>📘 Tutoriel fiche projet</h2>
-    <p>
-      Cette page peut contenir :
-      <ul>
-        <li>Une vidéo</li>
-        <li>Un lien Genially</li>
-        <li>Un PDF</li>
-      </ul>
-    </p>
-
-    <button class="back" onclick="showSection('accueil')">⬅ Retour accueil</button>
-  </div>
+<!-- LISTE DES PROJETS -->
+<section id="liste" class="page">
+  <h2>Liste des projets</h2>
+  <ul>
+    <li>Projet IA</li>
+    <li>Web Radio</li>
+    <li>FabLab</li>
+    <li>PIX / E-Nov</li>
+  </ul>
+  <button class="back" onclick="showPage('accueil')">⬅ Retour</button>
 </section>
 
-<!-- A PROPOS -->
-<section id="apropos" class="section">
-  <div class="card">
-    <h2>ℹ️ À propos</h2>
-    <p>
-      Outil de suivi des projets du Lycée Français de Tananarive.<br>
-      Version simple – hébergement GitHub Pages.
-    </p>
-
-    <button class="back" onclick="showSection('accueil')">⬅ Retour accueil</button>
-  </div>
+<!-- AIDE -->
+<section id="aide" class="page">
+  <h2>Aide</h2>
+  <p>
+    Cet outil permet de visualiser et suivre les projets du LFT.<br>
+    Une version collaborative sera ajoutée ensuite.
+  </p>
+  <button class="back" onclick="showPage('accueil')">⬅ Retour</button>
 </section>
 
 </main>
 
+<footer>
+  Outil de suivi – Version stable
+</footer>
+
 <script>
-function showSection(id){
-  document.querySelectorAll('.section').forEach(sec=>{
-    sec.classList.remove('active');
-  });
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 </script>
