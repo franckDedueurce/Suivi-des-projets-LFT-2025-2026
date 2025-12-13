@@ -1579,7 +1579,85 @@
     const KEY_TABLES = 'lft_projets_tables_v2';
     const KEY_LINKS = 'lft_projets_links_v2';
 
-    function saveState() {
+    
+    /* ============================
+       MODE PARTAGÉ (Apps Script)
+       - Lecture pour tous
+       - Édition réservée (mot de passe)
+       ============================ */
+
+    // 1) Colle ici l’URL de TON Apps Script (Web app)
+    const API_URL = "https://script.google.com/a/macros/egd.mg/s/AKfycbzP1wWe7oPpVjlRpQ6SAVb2FUUO-eP0aZt8PGKjwifHjCSbtFzLsU23Fm_QnjDk14v2MA/exec";
+
+    // 2) Mot de passe (token) d’édition : stocké sur chaque ordinateur (localStorage)
+    const KEY_EDIT_TOKEN = "LFT_EDIT_TOKEN";
+
+    function getEditToken() {
+      return localStorage.getItem(KEY_EDIT_TOKEN) || "";
+    }
+    function setEditToken(t) {
+      localStorage.setItem(KEY_EDIT_TOKEN, String(t || ""));
+    }
+
+    async function apiGetState() {
+      if (!API_URL) return null;
+      const r = await fetch(API_URL, { cache: "no-store" });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Erreur API (GET)");
+      return j.state || null;
+    }
+
+    async function apiSetState(state) {
+      if (!API_URL) return { ok: false };
+      const token = getEditToken();
+      if (!token) {
+        // pas de token => pas d'édition (lecture seule)
+        return { ok: false, error: "Token manquant" };
+      }
+      const payload = { action: "set", token, state: state };
+      const r = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Erreur API (POST)");
+      return j;
+    }
+
+    function applyRemoteToLocalStorage(remote) {
+      try {
+        if (!remote || typeof remote !== "object") return;
+        if (remote.mois) localStorage.setItem(KEY_MOIS, JSON.stringify(remote.mois));
+        if (remote.tables) localStorage.setItem(KEY_TABLES, JSON.stringify(remote.tables));
+        if (remote.links) localStorage.setItem(KEY_LINKS, JSON.stringify(remote.links));
+      } catch (e) {
+        console.warn("Impossible d'appliquer l'état distant :", e);
+      }
+    }
+
+    function configureEditToken() {
+      const current = getEditToken();
+      const t = prompt("Mot de passe d’édition (EDIT_TOKEN) :", current || "");
+      if (t === null) return;
+      setEditToken(t.trim());
+      alert("OK. Le mot de passe d’édition est enregistré sur cet ordinateur.\n\nAstuce : recharge la page ensuite.");
+    }
+
+    // Bouton discret dans le footer (ajouté au chargement)
+    function injectEditButton() {
+      const footer = document.querySelector("footer .footer-inner");
+      if (!footer) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Configurer l’édition";
+      btn.className = "btn btn-secondary";
+      btn.style.marginLeft = "10px";
+      btn.addEventListener("click", configureEditToken);
+      footer.appendChild(btn);
+    }
+
+function saveStateLocal() {
         try {
             // Sauvegarde des mois
             sauvegarderMoisCourant();
@@ -1616,7 +1694,32 @@
         }
     }
 
-    function loadState() {
+
+    function saveState() {
+      // 1) Sauvegarde locale (comme avant)
+      saveStateLocal();
+
+      // 2) Sauvegarde partagée (si possible)
+      if (!API_URL) return;
+
+      try {
+        const state = {
+          mois: JSON.parse(localStorage.getItem(KEY_MOIS) || "{}"),
+          tables: JSON.parse(localStorage.getItem(KEY_TABLES) || "{}"),
+          links: JSON.parse(localStorage.getItem(KEY_LINKS) || "{}"),
+          updatedAt: Date.now()
+        };
+        apiSetState(state).catch(err => {
+          // Si pas de token, on reste en lecture seule sans bloquer l'interface
+          console.warn("Sauvegarde partagée impossible :", err.message || err);
+        });
+      } catch (e) {
+        console.warn("Erreur préparation sauvegarde partagée :", e);
+      }
+    }
+
+
+function loadStateLocal() {
         try {
             // Restauration des mois
             const moisJSON = localStorage.getItem(KEY_MOIS);
@@ -1654,9 +1757,32 @@
         }
     }
 
-    // Lancement
+
+    function loadState() {
+      // 1) Charge d'abord localement (démarrage immédiat)
+      loadStateLocal();
+
+      // 2) Puis tente de récupérer l'état partagé (et l'appliquer)
+      if (!API_URL) return;
+      apiGetState()
+        .then(remote => {
+          if (!remote) return;
+          applyRemoteToLocalStorage(remote);
+          loadStateLocal(); // recharge l'UI depuis le localStorage mis à jour
+        })
+        .catch(err => {
+          console.warn("Lecture état partagé impossible :", err.message || err);
+        });
+    }
+
+
+
+    // Injection du bouton "Configurer l'édition"
+    document.addEventListener("DOMContentLoaded", injectEditButton);
+// Lancement
     loadState();
     window.addEventListener('beforeunload', saveState);
 </script>
 </body>
 </html>
+
