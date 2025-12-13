@@ -1,124 +1,1662 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Suivi des projets – LFT</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Lycée français de Tananarive, Madagascar – Suivi des projets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --accent: #f97316;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.12);
+        }
 
-<style>
-body{
-    font-family: system-ui, Arial, sans-serif;
-    margin:0;
-    background:#f3f4f6;
-}
-header{
-    background:#2563eb;
-    color:white;
-    padding:20px;
-    text-align:center;
-}
-main{
-    max-width:1000px;
-    margin:auto;
-    padding:20px;
-}
-.page{
-    display:none;
-}
-.page.active{
-    display:block;
-}
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:20px;
-}
-button{
-    border:none;
-    padding:20px;
-    border-radius:12px;
-    cursor:pointer;
-    background:white;
-    box-shadow:0 4px 10px rgba(0,0,0,.1);
-    text-align:left;
-}
-button:hover{
-    transform:scale(1.02);
-}
-h2{
-    margin-top:0;
-}
-footer{
-    text-align:center;
-    padding:20px;
-    color:#555;
-}
-</style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #eff6ff, #f9fafb);
+            color: var(--text-main);
+        }
+
+        header {
+            background: linear-gradient(120deg, #1d4ed8, #0ea5e9);
+            color: white;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.3);
+        }
+
+        .header-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .subtitle {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .header-logo {
+            max-width: 140px;
+            height: auto;
+        }
+
+        main {
+            max-width: 1120px;
+            margin: 1.5rem auto 2.5rem;
+            padding: 0 1rem;
+        }
+
+        .page-section {
+            display: none;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .page-title {
+            margin-top: 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .page-title span.icon {
+            font-size: 1.4rem;
+        }
+
+        .intro-text {
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .grid-buttons {
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .big-button {
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 1.1rem 1rem;
+            background: white;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.35rem;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.12s ease, box-shadow 0.12s ease,
+                        border 0.12s ease, background 0.12s ease;
+        }
+
+        .big-button-main {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .big-button-main .btn-label {
+            color: rgba(243, 244, 246, 0.9);
+        }
+
+        .big-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .big-button-main:hover {
+            border-color: white;
+            background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+        }
+
+        .btn-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .btn-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.12);
+            color: #1d4ed8;
+        }
+
+        .section-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: rgba(236, 72, 153, 0.08);
+            color: #be185d;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 0.45rem 0.95rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-small {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger {
+            border-color: #fecaca;
+            color: #b91c1c;
+            padding: 0.2rem 0.45rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
+
+        .table-wrapper {
+            margin-top: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: #f9fafb;
+            padding: 0.5rem;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.5rem;
+            vertical-align: top;
+        }
+
+        th {
+            background: #eff6ff;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td[contenteditable="true"] {
+            background: white;
+            cursor: text;
+        }
+
+        td:first-child {
+            white-space: nowrap;
+        }
+
+        .section-actions {
+            margin-top: 1.4rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        footer {
+            padding: 1rem 1.2rem 1.5rem;
+            background: #0f172a;
+            color: #e5e7eb;
+            font-size: 0.8rem;
+            margin-top: 2rem;
+        }
+
+        .footer-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .months-grid {
+            margin-top: 1.2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .month-button {
+            border: none;
+            border-radius: 999px;
+            padding: 0.6rem 0.8rem;
+            background: white;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-align: center;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+        }
+
+        .month-button:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 0.7rem 0.9rem; }
+            .card { padding: 1.1rem 1rem; }
+            .section-header { flex-direction: column; }
+            .header-main { flex-direction: column; align-items: flex-start; }
+            .header-logo { max-width: 160px; }
+        }
+    </style>
 </head>
-
 <body>
-
 <header>
-    <h1>Suivi des projets – Lycée Français de Tananarive</h1>
-    <p>Outil de consultation des projets</p>
+    <div class="header-inner">
+        <div class="header-main">
+            <div class="header-text">
+                <h1>Lycée français de Tananarive, Madagascar</h1>
+                <p class="subtitle">
+                    Tableau de bord – Suivi des projets (LFT, AEFE, Zone Océan Indien, projets institutionnels)
+                </p>
+            </div>
+            <img src="LogoLFT.png" alt="Lycée Français de Tananarive - AEFE" class="header-logo">
+        </div>
+    </div>
 </header>
 
 <main>
+    <!-- ACCUEIL -->
+    <section id="accueil" class="page-section active">
+        <div class="card">
+            <h2 class="page-title">
+                <span class="icon">📌</span>
+                Tableau de bord – Suivi des projets du LFT
+            </h2>
+            <p class="intro-text">
+                Cet outil permet de recenser et de suivre les projets portés par le Lycée Français de Tananarive,
+                en lien avec la zone Océan Indien, l’AEFE et les priorités institutionnelles. Utilise les boutons
+                ci-dessous pour accéder aux différentes vues.
+            </p>
 
-<!-- ACCUEIL -->
-<section id="accueil" class="page active">
-    <h2>Tableau de bord</h2>
-    <div class="grid">
-        <button onclick="showPage('mois')">
-            <h3>📅 Projets par mois</h3>
-            <p>Vue chronologique des projets</p>
-        </button>
+            <div class="grid-buttons">
+                <!-- 1. Suivi des projets mois par mois -->
+                <button class="big-button big-button-main" type="button" onclick="afficherSection('projets-mois')">
+                    <span class="tag">Vue chronologique</span>
+                    <span class="btn-title">Suivi des projets mois par mois</span>
+                    <span class="btn-label">Visualiser les projets de l’établissement organisés par mois (année scolaire).</span>
+                </button>
 
-        <button onclick="showPage('thematique')">
-            <h3>🏷️ Projets par thématique</h3>
-            <p>Classement par type de projet</p>
-        </button>
+                <!-- 2. Projets LFT -->
+                <button class="big-button" type="button" onclick="afficherSection('lft')">
+                    <span class="tag">Interne LFT</span>
+                    <span class="btn-title">Projets LFT</span>
+                    <span class="btn-label">Lister les projets portés en interne par les équipes du lycée.</span>
+                </button>
 
-        <button onclick="showPage('tuto')">
-            <h3>📘 Tuto fiche projet</h3>
-            <p>Aide à la rédaction</p>
-        </button>
-    </div>
-</section>
+                <!-- 3. Projets Zone Océan Indien -->
+                <button class="big-button" type="button" onclick="afficherSection('zoi')">
+                    <span class="tag">Coopérations de zone</span>
+                    <span class="btn-title">Projets Zone Océan Indien</span>
+                    <span class="btn-label">Cartographier les projets de la zone et les partenariats inter-établissements.</span>
+                </button>
 
-<!-- PROJETS PAR MOIS -->
-<section id="mois" class="page">
-    <h2>Projets par mois</h2>
-    <p>(contenu à compléter)</p>
-    <button onclick="showPage('accueil')">⬅ Retour accueil</button>
-</section>
+                <!-- 4. Projets AEFE -->
+                <button class="big-button" type="button" onclick="afficherSection('aefe')">
+                    <span class="tag">Réseau AEFE</span>
+                    <span class="btn-title">Projets AEFE</span>
+                    <span class="btn-label">Suivre les projets en lien direct avec les orientations de l’AEFE.</span>
+                </button>
 
-<!-- PROJETS PAR THÉMATIQUE -->
-<section id="thematique" class="page">
-    <h2>Projets par thématique</h2>
-    <p>(contenu à compléter)</p>
-    <button onclick="showPage('accueil')">⬅ Retour accueil</button>
-</section>
+                <!-- 5. Projets institutionnels -->
+                <button class="big-button" type="button" onclick="afficherSection('inst')">
+                    <span class="tag">Cadre institutionnel</span>
+                    <span class="btn-title">Projets institutionnels</span>
+                    <span class="btn-label">Suivre les projets liés aux axes institutionnels et au projet d’établissement.</span>
+                </button>
 
-<!-- TUTO -->
-<section id="tuto" class="page">
-    <h2>Tutoriel fiche projet</h2>
-    <p>Ajoute ici ton lien Genially / vidéo.</p>
-    <button onclick="showPage('accueil')">⬅ Retour accueil</button>
-</section>
+                <!-- 6. Projet d’établissement -->
+                <button class="big-button" type="button" onclick="afficherSection('projet-etab')">
+                    <span class="tag">Référence stratégique</span>
+                    <span class="btn-title">Projet d’établissement</span>
+                    <span class="btn-label">Accéder au projet d’établissement (Genially, document, etc.).</span>
+                </button>
 
+                <!-- 7. Tuto fiche projet -->
+                <button class="big-button" type="button" onclick="afficherSection('tuto-fiche')">
+                    <span class="tag">Accompagnement</span>
+                    <span class="btn-title">Tuto fiche projet</span>
+                    <span class="btn-label">Lien vers un tutoriel expliquant comment remplir la fiche projet.</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS MOIS PAR MOIS : CHOIX DU MOIS -->
+    <section id="projets-mois" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🗓️</span>
+                        Suivi des projets mois par mois
+                    </h2>
+                    <p class="intro-text">
+                        Année scolaire de septembre à juin. Choisis un mois pour accéder à une page paramétrable
+                        où tu pourras saisir les projets connus pour ce mois (prévisionnels et réalisés).
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Vue chronologique</span>
+                </div>
+            </div>
+
+            <div class="months-grid">
+                <button class="month-button" type="button" onclick="ouvrirMois('Septembre')">Septembre</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Octobre')">Octobre</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Novembre')">Novembre</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Décembre')">Décembre</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Janvier')">Janvier</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Février')">Février</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Mars')">Mars</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Avril')">Avril</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Mai')">Mai</button>
+                <button class="month-button" type="button" onclick="ouvrirMois('Juin')">Juin</button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary btn-small" onclick="afficherSection('accueil')">
+                    ⬅ Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- DETAIL D'UN MOIS -->
+    <section id="mois-detail" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📅</span>
+                        Projets du mois de <span id="moisTitre">—</span>
+                    </h2>
+                    <p class="intro-text">
+                        Saisis ici les projets connus pour ce mois : projets prévus, actions réalisées, temps forts, etc.
+                        Le tableau est entièrement paramétrable : tu peux ajouter des lignes et modifier le contenu librement.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Mois sélectionné</span>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-primary" onclick="ajouterLigneMoisDetail()">
+                    ➕ Ajouter une ligne
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('projets-mois')">
+                    ⬅ Retour mois par mois
+                </button>
+                <button type="button" class="btn btn-ghost btn-small" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="table-mois-detail">
+                    <thead>
+                    <tr>
+                        <th>Projets du mois</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td contenteditable="true"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS LFT - PRINCIPAL -->
+    <section id="lft" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🏫</span>
+                        Projets Lycée Français de Tananarive (LFT)
+                    </h2>
+                    <p class="intro-text">
+                        Cette section centralise les projets internes portés par les équipes du LFT : projets disciplinaires,
+                        inter-cycles, événements d’établissement, dispositifs d’accompagnement, etc.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Interne établissement</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="afficherSection('lft-liste')">
+                    📋 Voir / saisir les projets LFT
+                </button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS LFT - LISTE (10 LIGNES PRÉVUES) -->
+    <section id="lft-liste" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📋</span>
+                        Liste des projets LFT
+                    </h2>
+                    <p class="intro-text">
+                        Renseigne ici les projets portés en interne par le LFT. Chaque ligne dispose d’une fiche projet vierge,
+                        d’un lien d’information et d’un lien d’historique, tous paramétrables et modifiables.
+                    </p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-primary" onclick="ajouterLigneGenerique('table-lft')">
+                    ➕ Ajouter une ligne
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('lft')">
+                    ⬅ Retour Projets LFT
+                </button>
+                <button type="button" class="btn btn-ghost btn-small" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="table-lft">
+                    <thead>
+                    <tr>
+                        <th>Intitulé du projet LFT</th>
+                        <th>Fiche projet vierge</th>
+                        <th>Info projet</th>
+                        <th>Historique</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- 10 lignes remplissables au départ -->
+                    <!-- Ligne 1 -->
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <!-- Lignes 2 à 10 (copie du même modèle, vides) -->
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS AEFE - PRINCIPAL -->
+    <section id="aefe" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🌐</span>
+                        Projets AEFE
+                    </h2>
+                    <p class="intro-text">
+                        Cette section recense les projets en lien avec les orientations du réseau AEFE. Elle permet d’identifier les
+                        projets structurants en lien avec l’Agence.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Réseau AEFE</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="afficherSection('aefe-liste')">
+                    📋 Voir / saisir les projets AEFE
+                </button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS AEFE - LISTE -->
+    <section id="aefe-liste" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📋</span>
+                        Liste des projets AEFE
+                    </h2>
+                    <p class="intro-text">
+                        Renseigne ici les projets AEFE (échanges, dispositifs de formation, projets pédagogiques, etc.)
+                        et associe pour chaque ligne une fiche projet vierge, une page d’information et un historique.
+                    </p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-primary" onclick="ajouterLigneGenerique('table-aefe')">
+                    ➕ Ajouter une ligne
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('aefe')">
+                    ⬅ Retour Projets AEFE
+                </button>
+                <button type="button" class="btn btn-ghost btn-small" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="table-aefe">
+                    <thead>
+                    <tr>
+                        <th>Intitulé du projet AEFE</th>
+                        <th>Fiche projet vierge</th>
+                        <th>Info projet</th>
+                        <th>Historique</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td contenteditable="true">Semaine des Lycées Français du Monde</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://www.education.gouv.fr/semaine-des-lycees-francais-du-monde-"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/11r-cfJZtFelQRrJWhOGz5XwG9ecjVteV?usp=drive_link"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">L’intelligence artificielle – projet annuel et transversal</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://www.ac-paris.fr/l-intelligence-artificielle-dans-l-education-130992"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/1iedF0HDn976gbBh0xYpgmBwZiWOBXZRj?usp=drive_link"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Club éloquence – concours AEH</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://aefe.gouv.fr/fr/reseau-scolaire-mondial/des-projets-et-dispositifs-en-partage/dossier-ambassadeurs-ambassadrices-en-herbe"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/1pSAnmaSTUrJaoRdU19KxnsoBKJFa_oVh?usp=drive_link"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Mai des langues</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://www.egd.mg/le-mai-des-langues-2025/"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/1Z2SX_xVAnhiNLueOfCSGPdYHDv9izTIE?usp=drive_link"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Échange ADN – AEFE</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://www.egd.mg/adn-aefe/"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/1sCuxaq0eyRY8-ds2ijuNh4Xo0TofwJTn?usp=drive_link"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Les Olympiades de la chimie</td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary"
+                                    data-url="https://www.olympiades-chimie.fr/"
+                                    onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost"
+                                    data-url="https://drive.google.com/drive/folders/1RiMXGFZtTD"
+                                    onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS ZOI - PRINCIPAL -->
+    <section id="zoi" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🌊</span>
+                        Projets Zone Océan Indien
+                    </h2>
+                    <p class="intro-text">
+                        Cette section regroupe les projets menés à l’échelle de la zone Océan Indien : coopérations inter-établissements,
+                        événements de zone, mutualisation de ressources, etc.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Coopérations de zone</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="afficherSection('zoi-liste')">
+                    📋 Voir / saisir les projets de la zone Océan Indien
+                </button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS ZOI - LISTE -->
+    <section id="zoi-liste" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📋</span>
+                        Liste des projets Zone Océan Indien
+                    </h2>
+                    <p class="intro-text">
+                        Renseigne ici les projets de la zone Océan Indien. En fin de ligne, tu peux associer une fiche projet,
+                        une page d’information et un historique.
+                    </p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-primary" onclick="ajouterLigneGenerique('table-zoi')">
+                    ➕ Ajouter une ligne
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('zoi')">
+                    ⬅ Retour Projets Zone Océan Indien
+                </button>
+                <button type="button" class="btn btn-ghost btn-small" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="table-zoi">
+                    <thead>
+                    <tr>
+                        <th>Intitulé du projet Zone Océan Indien</th>
+                        <th>Fiche projet vierge</th>
+                        <th>Info projet</th>
+                        <th>Historique</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS INSTITUTIONNELS - PRINCIPAL -->
+    <section id="inst" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🏛️</span>
+                        Projets institutionnels
+                    </h2>
+                    <p class="intro-text">
+                        Cette section rassemble les projets inscrits dans le cadre institutionnel : axes du projet d’établissement,
+                        priorités nationales, dispositifs officiels, etc.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Cadre institutionnel</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="afficherSection('inst-liste')">
+                    📋 Voir / saisir les projets institutionnels
+                </button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS INSTITUTIONNELS - LISTE -->
+    <section id="inst-liste" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📋</span>
+                        Liste des projets institutionnels
+                    </h2>
+                    <p class="intro-text">
+                        Renseigne ici les projets liés aux axes institutionnels (projet d’établissement, priorités nationales,
+                        circulaires, etc.). En fin de ligne, tu peux associer la fiche projet, une page de référence et un historique.
+                    </p>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button type="button" class="btn btn-primary" onclick="ajouterLigneGenerique('table-inst')">
+                    ➕ Ajouter une ligne
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('inst')">
+                    ⬅ Retour Projets institutionnels
+                </button>
+                <button type="button" class="btn btn-ghost btn-small" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="table-inst">
+                    <thead>
+                    <tr>
+                        <th>Intitulé du projet institutionnel</th>
+                        <th>Fiche projet vierge</th>
+                        <th>Info projet</th>
+                        <th>Historique</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td contenteditable="true"></td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-primary" onclick="ouvrirFicheProjet(this)">
+                                Fiche projet vierge
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-secondary" onclick="ouvrirInfoProjet(this)">
+                                Info projet
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-small btn-ghost" onclick="ouvrirHistoriqueProjet(this)">
+                                Historique
+                            </button>
+                            <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                                    onclick="supprimerLien(this)">✕</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJET D'ÉTABLISSEMENT -->
+    <section id="projet-etab" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">📑</span>
+                        Projet d'établissement
+                    </h2>
+                    <p class="intro-text">
+                        Cette page permet de pointer vers le projet d’établissement (Genially, document PDF, page web…).
+                        Le lien est paramétrable : colle simplement l’URL lorsque tu cliques sur le bouton.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Référence stratégique</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="ouvrirProjetEtab(this)">
+                    🔗 Ouvrir le projet d'établissement
+                </button>
+                <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                        onclick="supprimerLien(this)">✕</button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- TUTO FICHE PROJET -->
+    <section id="tuto-fiche" class="page-section">
+        <div class="card">
+            <div class="section-header">
+                <div>
+                    <h2 class="page-title">
+                        <span class="icon">🎓</span>
+                        Tuto fiche projet
+                    </h2>
+                    <p class="intro-text">
+                        Cette page pointe vers un tutoriel expliquant comment remplir la fiche projet (vidéo, Genially, diaporama…).
+                        Le lien est paramétrable : colle simplement l’URL lorsque tu cliques sur le bouton, ou utilise le tutoriel commun.
+                    </p>
+                </div>
+                <div class="badge">
+                    <span>Aide aux équipes</span>
+                </div>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-primary" onclick="ouvrirTutoFiche(this)">
+                    🔗 Ouvrir le tutoriel fiche projet
+                </button>
+                <button type="button" class="btn btn-small btn-danger" title="Supprimer le lien"
+                        onclick="supprimerLien(this)">✕</button>
+            </div>
+
+            <div class="section-actions">
+                <button type="button" class="btn btn-secondary" onclick="afficherSection('accueil')">
+                    🏠 Retour à l’accueil
+                </button>
+            </div>
+        </div>
+    </section>
 </main>
 
 <footer>
-    Outil de suivi des projets – LFT – Version partagée
+    <div class="footer-inner">
+        <span>Outil de suivi des projets – Lycée français de Tananarive – Version paramétrable</span>
+        <span>Les copies des fiches projets doivent être rangées dans le dossier Drive dédié.</span>
+    </div>
 </footer>
 
 <script>
-function showPage(id){
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-</script>
+    // Constantes de base
+    const DOSSIER_PROJETS = "Projet LFT 2025-2026";
+    const FICHE_PROJET_MODELE = "https://docs.google.com/document/d/1a8Evjzr_magbpTciki4jUDmfW2vaps5Q/copy";
+    const TUTO_FICHE_URL = "https://docs.google.com/document/d/1BUJrKIsRKqykSBhYusvjEYfEA5UyXgfc/edit?usp=drive_link&ouid=103402101997126526626&rtpof=true&sd=true";
 
+    // Correspondance "intitulé projet AEFE" -> URL info
+    const INFO_PROJET_DEFAULTS = {
+        "semaine des lycées français du monde": "https://www.education.gouv.fr/semaine-des-lycees-francais-du-monde-",
+        "l’intelligence artificielle – projet annuel et transversal": "https://www.ac-paris.fr/l-intelligence-artificielle-dans-l-education-130992",
+        "l'intelligence artificielle – projet annuel et transversal": "https://www.ac-paris.fr/l-intelligence-artificielle-dans-l-education-130992",
+        "club éloquence – concours aeh": "https://aefe.gouv.fr/fr/reseau-scolaire-mondial/des-projets-et-dispositifs-en-partage/dossier-ambassadeurs-ambassadrices-en-herbe",
+        "club eloquence – concours aeh": "https://aefe.gouv.fr/fr/reseau-scolaire-mondial/des-projets-et-dispositifs-en-partage/dossier-ambassadeurs-ambassadrices-en-herbe",
+        "mai des langues": "https://www.egd.mg/le-mai-des-langues-2025/",
+        "échange adn – aefe": "https://www.egd.mg/adn-aefe/",
+        "echange adn – aefe": "https://www.egd.mg/adn-aefe/",
+        "les olympiades de la chimie": "https://www.olympiades-chimie.fr/"
+    };
+
+    let moisCourant = null;
+    const donneesMois = {};
+
+    // Navigation entre sections
+    function afficherSection(id) {
+        const sections = document.querySelectorAll('.page-section');
+        const moisDetail = document.getElementById('mois-detail');
+        if (moisDetail && moisDetail.classList.contains('active')) {
+            sauvegarderMoisCourant();
+        }
+        sections.forEach(sec => sec.classList.remove('active'));
+        const cible = document.getElementById(id);
+        if (cible) {
+            cible.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    // Sauvegarde du mois courant (table "projets du mois")
+    function sauvegarderMoisCourant() {
+        if (!moisCourant) return;
+        const tbody = document.querySelector('#table-mois-detail tbody');
+        if (!tbody) return;
+        donneesMois[moisCourant] = tbody.innerHTML;
+    }
+
+    // Ouvrir un mois donné
+    function ouvrirMois(mois) {
+        sauvegarderMoisCourant();
+        moisCourant = mois;
+        document.getElementById('moisTitre').textContent = mois;
+        const table = document.getElementById('table-mois-detail');
+        const tbody = table.querySelector('tbody');
+        if (donneesMois[mois]) {
+            tbody.innerHTML = donneesMois[mois];
+        } else {
+            tbody.innerHTML = '';
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.setAttribute('contenteditable', 'true');
+            row.appendChild(cell);
+            tbody.appendChild(row);
+        }
+        afficherSection('mois-detail');
+    }
+
+    // Ajouter une ligne dans le tableau "projets du mois"
+    function ajouterLigneMoisDetail() {
+        const table = document.getElementById('table-mois-detail');
+        const tbody = table.querySelector('tbody');
+        const templateRow = tbody.rows[0];
+        const newRow = templateRow.cloneNode(true);
+        newRow.cells[0].textContent = '';
+        tbody.appendChild(newRow);
+        saveState();
+    }
+
+    // Ajouter une ligne générique dans les autres tableaux (LFT, AEFE, ZOI, INST)
+    function ajouterLigneGenerique(tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+        const tbody = table.querySelector('tbody');
+        const templateRow = tbody.rows[0];
+        const newRow = templateRow.cloneNode(true);
+        Array.from(newRow.cells).forEach(cell => {
+            const buttons = cell.querySelectorAll('button');
+            if (buttons.length) {
+                buttons.forEach(btn => btn.removeAttribute('data-url'));
+            } else if (cell.hasAttribute('contenteditable')) {
+                cell.textContent = '';
+            }
+        });
+        tbody.appendChild(newRow);
+        saveState();
+    }
+
+    // Transforme un lien Google Docs en /copy si besoin
+    function transformerLienTemplate(url) {
+        try {
+            const u = new URL(url);
+            if (u.hostname.includes("docs.google.com")) {
+                if (u.pathname.endsWith("/copy") || u.pathname.includes("/template")) {
+                    return u.toString();
+                }
+                if (u.pathname.includes("/edit")) {
+                    const base = u.origin + u.pathname.split("/edit")[0];
+                    return base + "/copy";
+                }
+                return u.origin + u.pathname.replace(/\/$/, "") + "/copy";
+            }
+        } catch (e) {}
+        return url;
+    }
+
+    // Bouton "Fiche projet vierge"
+    function ouvrirFicheProjet(btn) {
+        let url = btn.getAttribute('data-url');
+        if (!url) url = FICHE_PROJET_MODELE;  // modèle par défaut
+        if (!url) {
+            url = prompt("Saisir ou coller le lien de la fiche projet vierge (Google Docs, Drive, etc.) :");
+            if (!url) return;
+        }
+        const finalUrl = transformerLienTemplate(url);
+        btn.setAttribute('data-url', finalUrl);
+        saveState();
+        window.open(finalUrl, '_blank');
+        setTimeout(() => {
+            alert(
+                "La copie de la fiche projet vient d’être créée dans ton Drive.\n\n" +
+                "Pense à la déplacer dans le dossier :\n\n« " + DOSSIER_PROJETS + " »."
+            );
+        }, 800);
+    }
+
+    // Bouton "Info projet"
+    function ouvrirInfoProjet(btn) {
+        let url = btn.getAttribute('data-url');
+
+        // Si aucun data-url, on essaie de déduire le lien à partir du nom du projet (1ère colonne)
+        if (!url) {
+            const row = btn.closest('tr');
+            if (row && row.cells.length > 0) {
+                const titre = row.cells[0].textContent.trim().toLowerCase();
+                if (INFO_PROJET_DEFAULTS[titre]) {
+                    url = INFO_PROJET_DEFAULTS[titre];
+                    btn.setAttribute('data-url', url);
+                }
+            }
+        }
+
+        // Si toujours rien, on demande à l'utilisateur
+        if (!url) {
+            url = prompt("Saisir ou coller le lien d’information sur ce projet (page web explicative) :");
+            if (!url) return;
+            btn.setAttribute('data-url', url);
+        }
+
+        saveState();
+        window.open(url, '_blank');
+    }
+
+    // Bouton "Historique"
+    function ouvrirHistoriqueProjet(btn) {
+        let url = btn.getAttribute('data-url');
+        if (!url) {
+            url = prompt("Saisir ou coller le lien vers l’historique de ce projet (dossier Drive, pad, document, etc.) :");
+            if (!url) return;
+            btn.setAttribute('data-url', url);
+            saveState();
+        }
+        window.open(url, '_blank');
+    }
+
+    // Bouton projet d’établissement
+    function ouvrirProjetEtab(btn) {
+        let url = btn.getAttribute('data-url');
+        if (!url) {
+            url = prompt("Saisir ou coller le lien vers le projet d'établissement (Genially, document, etc.) :");
+            if (!url) return;
+            btn.setAttribute('data-url', url);
+            saveState();
+        }
+        window.open(url, '_blank');
+    }
+
+    // Bouton tuto fiche projet
+    function ouvrirTutoFiche(btn) {
+        let url = btn.getAttribute('data-url');
+        if (!url) url = TUTO_FICHE_URL;
+        if (!url) {
+            url = prompt("Saisir ou coller le lien vers le tutoriel (vidéo, Genially, document, etc.) :");
+            if (!url) return;
+        }
+        btn.setAttribute('data-url', url);
+        saveState();
+        window.open(url, '_blank');
+    }
+
+    // Bouton "✕" pour supprimer le lien associé
+    function supprimerLien(xButton) {
+        const confirmation = confirm("Voulez-vous supprimer le lien ?");
+        if (!confirmation) return;
+        const cell = xButton.parentElement;
+        if (!cell) return;
+        const buttons = cell.querySelectorAll('button');
+        buttons.forEach(btn => {
+            if (btn !== xButton) {
+                btn.removeAttribute('data-url');
+            }
+        });
+        saveState();
+        alert("Le lien a été supprimé pour ce bouton.");
+    }
+
+    /* ---------- SAUVEGARDE / RESTAURATION LOCALSTORAGE (VERSION 2) ---------- */
+
+    const KEY_MOIS = 'lft_projets_mois_v2';
+    const KEY_TABLES = 'lft_projets_tables_v2';
+    const KEY_LINKS = 'lft_projets_links_v2';
+
+    function saveState() {
+        try {
+            // Sauvegarde des mois
+            sauvegarderMoisCourant();
+            const moisJSON = JSON.stringify(donneesMois);
+            localStorage.setItem(KEY_MOIS, moisJSON);
+
+            // Sauvegarde des tableaux
+            const tableIds = ['table-aefe', 'table-zoi', 'table-lft', 'table-inst'];
+            const tableData = {};
+            tableIds.forEach(id => {
+                const table = document.getElementById(id);
+                if (table) {
+                    const tbody = table.querySelector('tbody');
+                    if (tbody) tableData[id] = tbody.innerHTML;
+                }
+            });
+            localStorage.setItem(KEY_TABLES, JSON.stringify(tableData));
+
+            // Sauvegarde des liens spécifiques (projet d’établissement + tuto fiche)
+            const linksData = {};
+            const btnProjet = document.querySelector('#projet-etab .btn-primary');
+            if (btnProjet) {
+                const u = btnProjet.getAttribute('data-url');
+                if (u) linksData.projetEtab = u;
+            }
+            const btnTuto = document.querySelector('#tuto-fiche .btn-primary');
+            if (btnTuto) {
+                const u2 = btnTuto.getAttribute('data-url');
+                if (u2) linksData.tutoFiche = u2;
+            }
+            localStorage.setItem(KEY_LINKS, JSON.stringify(linksData));
+        } catch (e) {
+            console.error("Erreur lors de la sauvegarde de l'état :", e);
+        }
+    }
+
+    function loadState() {
+        try {
+            // Restauration des mois
+            const moisJSON = localStorage.getItem(KEY_MOIS);
+            if (moisJSON) {
+                const obj = JSON.parse(moisJSON);
+                if (obj && typeof obj === 'object') Object.assign(donneesMois, obj);
+            }
+
+            // Restauration des tableaux
+            const tablesJSON = localStorage.getItem(KEY_TABLES);
+            if (tablesJSON) {
+                const tableData = JSON.parse(tablesJSON);
+                if (tableData && typeof tableData === 'object') {
+                    Object.keys(tableData).forEach(id => {
+                        const table = document.getElementById(id);
+                        if (table) {
+                            const tbody = table.querySelector('tbody');
+                            if (tbody) tbody.innerHTML = tableData[id];
+                        }
+                    });
+                }
+            }
+
+            // Restauration des liens spécifiques
+            const linksJSON = localStorage.getItem(KEY_LINKS);
+            if (linksJSON) {
+                const links = JSON.parse(linksJSON);
+                const btnProjet = document.querySelector('#projet-etab .btn-primary');
+                if (btnProjet && links.projetEtab) btnProjet.setAttribute('data-url', links.projetEtab);
+                const btnTuto = document.querySelector('#tuto-fiche .btn-primary');
+                if (btnTuto && links.tutoFiche) btnTuto.setAttribute('data-url', links.tutoFiche);
+            }
+        } catch (e) {
+            console.error("Erreur lors du chargement de l'état :", e);
+        }
+    }
+
+    // Lancement
+    loadState();
+    window.addEventListener('beforeunload', saveState);
+</script>
 </body>
 </html>
