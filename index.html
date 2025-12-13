@@ -1875,7 +1875,30 @@ Pense à la déplacer dans le dossier :
     }
 
     /* ---------- Démarrage ---------- */
-    (async function initShared() {
+    document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    ensureModeBar();
+
+    // Mode par défaut : lecture
+    ui.isEditor = false;
+    applyReadOnly(true);
+
+    attachAutoSaveListeners();
+
+    // Charger l’état partagé au démarrage
+    await loadSharedState(true);
+
+    // Rafraîchissement auto toutes les 30s en lecture
+    setInterval(() => {
+      if (!ui.isEditor) loadSharedState(false);
+    }, 30000);
+
+  } catch (e) {
+    console.error("Erreur initShared :", e);
+    alert("Erreur de chargement du suivi partagé.\nOuvre la console (F12) pour détails.");
+  }
+});
+
         ensureModeBar();
 
         // Mode par défaut : lecture
@@ -1896,3 +1919,4 @@ Pense à la déplacer dans le dossier :
 </script>
 </body>
 </html>
+
