@@ -2,7 +2,10 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Lycée français de Tananarive, Madagascar – Suivi des projets</title>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+<title>Lycée français de Tananarive, Madagascar – Suivi des projets</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
@@ -363,7 +366,73 @@
             .header-main { flex-direction: column; align-items: flex-start; }
             .header-logo { max-width: 160px; }
         }
-    </style>
+    
+/* ===== Partage (bouton + modal) ===== */
+#shareFab{
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9999;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  background: var(--primary, #2563eb);
+  color: #fff;
+  font-size: 20px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+}
+#shareFab:hover{ transform: translateY(-1px); }
+.modal{ display:none; position: fixed; inset:0; z-index: 10000; }
+.modal.show{ display:block; }
+.modal-backdrop{ position:absolute; inset:0; background: rgba(2,6,23,0.55); }
+.modal-card{
+  position: relative;
+  max-width: 980px;
+  margin: 6vh auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(2,6,23,0.35);
+  overflow: hidden;
+}
+.modal-head{
+  display:flex; align-items:center; justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(90deg, rgba(37,99,235,0.10), rgba(37,99,235,0.00));
+  border-bottom: 1px solid rgba(15,23,42,0.08);
+}
+.modal-head h3{ margin:0; font-size: 18px; }
+.modal-close{
+  border:none; background: transparent; cursor:pointer;
+  font-size: 18px; padding: 6px 10px; border-radius: 10px;
+}
+.modal-close:hover{ background: rgba(15,23,42,0.06); }
+.modal-body{ padding: 14px 16px 4px; }
+.modal-foot{ padding: 10px 16px 14px; border-top: 1px solid rgba(15,23,42,0.08); display:flex; justify-content:flex-end; gap:10px; }
+.muted{ color: var(--text-muted, #64748b); margin: 0 0 12px; }
+.share-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.share-row{ display:flex; gap:10px; align-items:center; margin-bottom: 8px; flex-wrap: wrap; }
+#exportArea,#importArea{
+  width: 100%;
+  min-height: 240px;
+  resize: vertical;
+  border-radius: 14px;
+  border: 1px solid rgba(15,23,42,0.12);
+  padding: 10px 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  outline: none;
+}
+#exportArea:focus,#importArea:focus{ border-color: rgba(37,99,235,0.55); box-shadow: 0 0 0 4px rgba(37,99,235,0.12); }
+.hint{ margin: 8px 0 10px; color: var(--text-muted, #64748b); font-size: 12px; }
+@media (max-width: 900px){
+  .share-grid{ grid-template-columns: 1fr; }
+  .modal-card{ margin: 3vh 10px; }
+}
+
+</style>
 </head>
 <body>
 <header>
@@ -1360,6 +1429,53 @@
     </div>
 </footer>
 
+<!-- ===== PARTAGE (export/import état) ===== -->
+<button id="shareFab" type="button" title="Partager / importer les données">🔁</button>
+
+<div id="shareModal" class="modal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="1"></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="modal-head">
+      <h3 id="shareTitle">Partage des données (Export / Import)</h3>
+      <button class="modal-close" type="button" data-close="1">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="muted">
+        Ton outil (SP7) enregistre les données dans le navigateur (localStorage). 
+        Pour partager avec les collègues, exporte un JSON depuis TON PC, puis colle ce JSON dans GitHub dans la variable <code>DEFAULT_SHARED_STATE</code> (ou donne-le à un collègue pour “Importer”).
+      </p>
+
+      <div class="share-grid">
+        <div>
+          <div class="share-row">
+            <button class="btn btn-primary" type="button" id="btnExportState">Exporter mes données</button>
+            <button class="btn" type="button" id="btnCopyExport">Copier</button>
+            <button class="btn" type="button" id="btnClearExport">Vider</button>
+          </div>
+          <textarea id="exportArea" spellcheck="false" placeholder="Clique sur “Exporter mes données”..."></textarea>
+          <p class="hint">Astuce : c’est ce texte JSON qu’il faut mettre dans GitHub pour que tout le monde voie les mêmes données.</p>
+        </div>
+
+        <div>
+          <div class="share-row">
+            <button class="btn btn-primary" type="button" id="btnImportState">Importer dans CE navigateur</button>
+            <button class="btn" type="button" id="btnClearImport">Vider</button>
+          </div>
+          <textarea id="importArea" spellcheck="false" placeholder="Colle ici un JSON exporté, puis clique sur Importer..."></textarea>
+          <p class="hint">Important : “Importer” n’écrit pas sur GitHub. Ça charge juste les données dans le navigateur actuel.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn" type="button" data-close="1">Fermer</button>
+    </div>
+  </div>
+</div>
+
+
+
 <script>
     // Constantes de base
     const DOSSIER_PROJETS = "Projet LFT 2025-2026";
@@ -1443,7 +1559,13 @@
         const tbody = table.querySelector('tbody');
         const templateRow = tbody.rows[0];
         const newRow = templateRow.cloneNode(true);
-        
+        Array.from(newRow.cells).forEach(cell => {
+            const buttons = cell.querySelectorAll('button');
+            if (buttons.length) {
+                buttons.forEach(btn => btn.removeAttribute('data-url'));
+            } else if (cell.hasAttribute('contenteditable')) {
+                cell.textContent = '';
+            }
         });
         tbody.appendChild(newRow);
         saveState();
@@ -1573,21 +1695,7 @@
     const KEY_TABLES = 'lft_projets_tables_v2';
     const KEY_LINKS = 'lft_projets_links_v2';
 
-    
-    // ================================
-    // MODE "PARTAGÉ" via GitHub Pages
-    // -------------------------------
-    // GitHub Pages est un hébergement STATIQUE : le site ne peut pas enregistrer
-    // vos modifications (ajout de lignes, textes...) sur le serveur.
-    //
-    // => Pour que vos collègues voient vos données, il faut les "figer" dans ce fichier
-    //    puis COMMIT sur GitHub.
-    //
-    // Astuce : utilisez le bouton "Exporter l'état" (en bas) pour récupérer le JSON
-    // puis collez-le dans SHARED_DEFAULT_STATE ci-dessous, commit, et c'est partagé.
-    // ================================
-    const SHARED_DEFAULT_STATE = null; // <-- Collez ici l'objet exporté (JSON), ou laissez null.
-function saveState() {
+    function saveState() {
         try {
             // Sauvegarde des mois
             sauvegarderMoisCourant();
@@ -1626,8 +1734,6 @@ function saveState() {
 
     function loadState() {
         try {
-            let usedShared = false;
-
             // Restauration des mois
             const moisJSON = localStorage.getItem(KEY_MOIS);
             if (moisJSON) {
@@ -1664,82 +1770,135 @@ function saveState() {
         }
     }
 
+        // ===== Partage : export / import =====
+        function getCurrentStateObject(){
+            const projectsTable = document.getElementById("projectsTable");
+            const historyTable = document.getElementById("historyTable");
+            const emptyTemplate = '<tr><td colspan="3" class="muted">Aucune donnée.</td></tr>';
+
+            return {
+                version: 1,
+                exportedAt: new Date().toISOString(),
+                projectsTableHTML: (projectsTable ? projectsTable.innerHTML : "") || "",
+                historyTableHTML: (historyTable ? historyTable.innerHTML : "") || "",
+                links: {
+                    ...(safeJSONParse(localStorage.getItem(STORAGE_KEY + "-links"), {}) || {})
+                }
+            };
+        }
+
+        function applyStateObject(state){
+            if(!state || typeof state !== "object") return;
+            if(typeof state.projectsTableHTML === "string"){
+                localStorage.setItem(STORAGE_KEY + "-projects", state.projectsTableHTML);
+            }
+            if(typeof state.historyTableHTML === "string"){
+                localStorage.setItem(STORAGE_KEY + "-history", state.historyTableHTML);
+            }
+            if(state.links && typeof state.links === "object"){
+                localStorage.setItem(STORAGE_KEY + "-links", JSON.stringify(state.links));
+            }
+            // Recharger l’affichage
+            loadState();
+        }
+
+        function bootstrapDefaultSharedState(){
+            // Si aucune donnée locale, on précharge depuis DEFAULT_SHARED_STATE (si fourni)
+            const hasAny = !!(localStorage.getItem(STORAGE_KEY + "-projects") || localStorage.getItem(STORAGE_KEY + "-history") || localStorage.getItem(STORAGE_KEY + "-links"));
+            if(hasAny) return;
+
+            if(DEFAULT_SHARED_STATE){
+                try{
+                    applyStateObject(DEFAULT_SHARED_STATE);
+                }catch(e){
+                    console.warn("DEFAULT_SHARED_STATE invalide:", e);
+                }
+            }
+        }
+
+        // Modal UI
+        const shareModal = document.getElementById("shareModal");
+        const shareFab = document.getElementById("shareFab");
+        const exportArea = document.getElementById("exportArea");
+        const importArea = document.getElementById("importArea");
+
+        function openShareModal(){
+            if(!shareModal) return;
+            shareModal.classList.add("show");
+            shareModal.setAttribute("aria-hidden","false");
+        }
+        function closeShareModal(){
+            if(!shareModal) return;
+            shareModal.classList.remove("show");
+            shareModal.setAttribute("aria-hidden","true");
+        }
+
+        if(shareFab){
+            shareFab.addEventListener("click", openShareModal);
+        }
+        if(shareModal){
+            shareModal.addEventListener("click", (e)=>{
+                const t = e.target;
+                if(t && t.dataset && t.dataset.close) closeShareModal();
+            });
+            document.addEventListener("keydown", (e)=>{
+                if(e.key === "Escape" && shareModal.classList.contains("show")) closeShareModal();
+            });
+        }
+
+        const btnExportState = document.getElementById("btnExportState");
+        const btnCopyExport = document.getElementById("btnCopyExport");
+        const btnClearExport = document.getElementById("btnClearExport");
+        const btnImportState = document.getElementById("btnImportState");
+        const btnClearImport = document.getElementById("btnClearImport");
+
+        if(btnExportState){
+            btnExportState.addEventListener("click", ()=>{
+                try{
+                    const state = getCurrentStateObject();
+                    exportArea.value = JSON.stringify(state, null, 2);
+                }catch(e){
+                    alert("Impossible d'exporter : " + e.message);
+                }
+            });
+        }
+        if(btnCopyExport){
+            btnCopyExport.addEventListener("click", async ()=>{
+                try{
+                    await navigator.clipboard.writeText(exportArea.value || "");
+                    btnCopyExport.textContent = "Copié ✓";
+                    setTimeout(()=> btnCopyExport.textContent = "Copier", 900);
+                }catch(e){
+                    alert("Copie impossible. Sélectionne le texte puis Ctrl+C.");
+                }
+            });
+        }
+        if(btnClearExport){
+            btnClearExport.addEventListener("click", ()=> exportArea.value = "");
+        }
+        if(btnClearImport){
+            btnClearImport.addEventListener("click", ()=> importArea.value = "");
+        }
+        if(btnImportState){
+            btnImportState.addEventListener("click", ()=>{
+                try{
+                    const txt = (importArea.value || "").trim();
+                    if(!txt) return alert("Colle d'abord le JSON exporté.");
+                    const state = JSON.parse(txt);
+                    applyStateObject(state);
+                    alert("Import OK ! Recharge la page si besoin.");
+                }catch(e){
+                    alert("JSON invalide : " + e.message);
+                }
+            });
+        }
+
+
+
     // Lancement
+    bootstrapDefaultSharedState();
     loadState();
     window.addEventListener('beforeunload', saveState);
 </script>
-
-  <!-- =========================
-       Export / Import (Admin)
-       ========================= -->
-  <div id="admin-export" style="max-width:1100px;margin:18px auto 40px;padding:14px 16px;background:#fff;border-radius:14px;box-shadow:0 10px 25px rgba(15,23,42,.10);">
-    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-weight:800;font-size:16px;">🔒 Admin – Partage GitHub</div>
-        <div style="color:#64748b;font-size:13px;line-height:1.3;margin-top:2px;">
-          GitHub Pages ne sauvegarde pas vos modifications. Pour partager vos données : exportez l’état, collez-le dans <b>SHARED_DEFAULT_STATE</b>, puis commit.
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <button type="button" id="btn-export-state" class="btn-secondary">Exporter l’état (JSON)</button>
-        <button type="button" id="btn-copy-state" class="btn-secondary">Copier le JSON</button>
-      </div>
-    </div>
-    <textarea id="export-json" style="width:100%;margin-top:12px;min-height:110px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;font-size:12px;line-height:1.35;padding:10px;border:1px solid #e2e8f0;border-radius:10px;" placeholder="Clique sur “Exporter l’état (JSON)”…"></textarea>
-  </div>
-
-  <script>
-    (function(){
-      function collectLinks(){
-        const linksData = {};
-        const btnProjet = document.querySelector('#projet-etab .btn-primary');
-        if (btnProjet) linksData.projetEtab = btnProjet.getAttribute('data-url') || "";
-        const btnTuto = document.querySelector('#tuto-fiche .btn-primary');
-        if (btnTuto) linksData.tutoFiche = btnTuto.getAttribute('data-url') || "";
-        return linksData;
-      }
-      function collectTables(){
-        const tableIds = ['table-aefe','table-zoi','table-lft','table-inst'];
-        const out = {};
-        tableIds.forEach(id=>{
-          const t=document.getElementById(id);
-          const tb=t?.querySelector('tbody');
-          out[id]=tb?tb.innerHTML:"";
-        });
-        return out;
-      }
-      function exportState(){
-        // IMPORTANT : l’état réel de SP7 est stocké dans le DOM + donneesMois + liens
-        try { if (typeof sauvegarderMoisCourant === "function") sauvegarderMoisCourant(); } catch(e){}
-        const state = {
-          mois: (typeof donneesMois === "object" && donneesMois) ? donneesMois : {},
-          tables: collectTables(),
-          links: collectLinks()
-        };
-        return state;
-      }
-      const ta=document.getElementById('export-json');
-      const btnExp=document.getElementById('btn-export-state');
-      const btnCopy=document.getElementById('btn-copy-state');
-      if(btnExp) btnExp.addEventListener('click', ()=>{
-        const s=exportState();
-        ta.value = JSON.stringify(s, null, 2);
-        ta.focus(); ta.select();
-      });
-      if(btnCopy) btnCopy.addEventListener('click', async ()=>{
-        try{
-          if(!ta.value.trim()) ta.value = JSON.stringify(exportState(), null, 2);
-          await navigator.clipboard.writeText(ta.value);
-          btnCopy.textContent="✅ Copié";
-          setTimeout(()=>btnCopy.textContent="Copier le JSON", 1200);
-        }catch(e){
-          alert("Copie impossible (navigateur). Sélectionne le texte et fais Ctrl+C.");
-          ta.focus(); ta.select();
-        }
-      });
-    })();
-  </script>
-
 </body>
 </html>
-
