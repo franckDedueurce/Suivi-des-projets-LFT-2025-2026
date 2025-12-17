@@ -1443,13 +1443,7 @@
         const tbody = table.querySelector('tbody');
         const templateRow = tbody.rows[0];
         const newRow = templateRow.cloneNode(true);
-        Array.from(newRow.cells).forEach(cell => {
-            const buttons = cell.querySelectorAll('button');
-            if (buttons.length) {
-                buttons.forEach(btn => btn.removeAttribute('data-url'));
-            } else if (cell.hasAttribute('contenteditable')) {
-                cell.textContent = '';
-            }
+        
         });
         tbody.appendChild(newRow);
         saveState();
@@ -1748,3 +1742,4 @@ function saveState() {
 
 </body>
 </html>
+
